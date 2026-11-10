@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" href="data:,"/>
+<title>4K Image Enhancer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f2ed; --surface:#ffffff; --surface2:#faf8f3; --line:#e6e1d6; --text:#171512; --muted:#6f6a5e; --accent:#c47a12; --accent-dark:#9a5e08; --accent-bg:#fff3dd; --dark:#171512; --radius:18px;
+  --shadow:0 10px 30px rgba(23,21,18,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#121110; --surface:#1c1a17; --surface2:#24211d; --line:#332f28; --text:#f5f1e8; --muted:#a8a195; --accent:#f0a832; --accent-dark:#f0a832; --accent-bg:#2e2410; --shadow:0 10px 30px rgba(0,0,0,.35);}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
+.hero{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end;margin:6px 0 18px}
+.hero h1{font-size:clamp(30px,5vw,52px);line-height:.95;letter-spacing:-.03em;margin:0;font-weight:800}
+.hero h1 span{color:var(--accent)}
+.hero p{margin:10px 0 0;color:var(--muted);max-width:560px;font-size:16px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);background:var(--surface);padding:8px 10px;border-radius:999px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:18px}
+.card h2{margin:0 0 4px;font-size:16px;letter-spacing:-.01em}
+.card h3{margin:18px 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sub{color:var(--muted);font-size:13.5px;margin:0}
+.drop{border:1.8px dashed color-mix(in srgb,var(--accent) 55%, var(--line));background:var(--surface2);border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover,.drop.drag{border-color:var(--accent);background:var(--accent-bg)}
+.drop strong{display:block;font-size:15px}
+.drop span{font-size:13px;color:var(--muted)}
+.filemeta{display:none;margin-top:12px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px}
+.filemeta.show{display:block}
+.filemeta b{word-break:break-all}
+.mono{font-family:"JetBrains Mono",monospace;font-size:12px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+label{font-size:13.5px;font-weight:600;display:flex;justify-content:space-between;margin:14px 0 6px}
+label output{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--accent-dark);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button, .preset{border:1px solid var(--line);background:var(--surface2);color:var(--text);padding:10px 8px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
+.seg button.active,.preset.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+@media(prefers-color-scheme:dark){.seg button.active,.preset.active{background:var(--accent);color:#171512;border-color:var(--accent)}}
+.presets{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px}
+.presets .preset{font-size:12px;padding:9px 4px}
+select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-weight:600}
+.btn{width:100%;border:0;cursor:pointer;border-radius:12px;padding:14px 16px;font-weight:800;font-size:15px}
+.btn-primary{background:var(--accent);color:#fff;margin-top:16px}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text);margin-top:8px}
+.btn-download{background:var(--dark);color:#fff;display:none}
+@media(prefers-color-scheme:dark){.btn-download{background:#f5f1e8;color:#171512}}
+.btn-download.show{display:block}
+.note{font-size:12.5px;color:var(--muted);background:var(--accent-bg);border-radius:10px;padding:10px 12px;margin-top:14px;line-height:1.45}
+/* Preview */
+.preview-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.preview-head h2{margin:0}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px}
+.stat b{font-family:"JetBrains Mono",monospace}
+.stage{padding:16px}
+.empty{border:1px solid var(--line);background:var(--surface2);border-radius:14px;min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:var(--muted)}
+.empty .big{font-size:42px;line-height:1;margin-bottom:10px}
+.empty strong{color:var(--text);font-size:17px}
+.compare{display:none;position:relative;border-radius:14px;overflow:hidden;background:#0f0e0c;line-height:0;user-select:none}
+.compare.show{display:block}
+.compare img{width:100%;height:auto;display:block;max-height:68vh;object-fit:contain;background:#0f0e0c}
+.compare .afterWrap{position:absolute;inset:0;overflow:hidden}
+.compare .afterWrap img{width:100%;height:100%;object-fit:contain}
+.handle{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);cursor:ew-resize}
+.handle::after{content:"‹ ›";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#111;border-radius:999px;padding:8px 10px;font-size:13px;font-weight:800;line-height:1;letter-spacing:2px;white-space:nowrap}
+.tag{position:absolute;top:12px;z-index:3;background:rgba(0,0,0,.72);color:#fff;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;padding:6px 9px;border-radius:999px;line-height:1}
+.tag.before{left:12px}.tag.after{right:12px}
+.range-compare{margin-top:12px}
+.progress{display:none;margin-top:14px}
+.progress.show{display:block}
+.bar{height:9px;background:var(--line);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.progress p{font-size:13px;color:var(--muted);margin:6px 0 0}
+.tips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:700px){.tips{grid-template-columns:1fr}}
+.tip{padding:16px}
+.tip b{display:block;margin-bottom:4px}
+.tip p{margin:0;color:var(--muted);font-size:13.5px}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>Photo ko <span>4K</span> mein<br>saaf aur sharp karein.</h1>
+      <p>Koi bhi photo upload karein, usay 3840px tak upscale karein, sharpness aur colors adjust karein — phir enhanced photo download kar lein. Sab kuch aapke browser mein hota hai, photo kahin upload nahi hoti.</p>
+    </div>
+    <div class="badges"><span class="badge">Max 3840 px</span><span class="badge">PNG / JPG</span><span class="badge">No sign-up</span></div>
+  </div>
+
+  <div class="grid">
+    <!-- Controls -->
+    <section class="card card-pad" aria-label="Enhancer controls">
+      <h2>1 — Photo choose karein</h2>
+      <p class="sub">JPG, PNG ya WebP — phone ya computer se.</p>
+      <div style="height:12px"></div>
+      <div class="drop" id="dropZone" role="button" tabindex="0" aria-label="Upload image">
+        <strong>📷 &nbsp;Photo yahan drop karein</strong>
+        <span>ya click karke file select karein</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/*">
+      <div class="filemeta" id="fileMeta">
+        <b id="fileName">—</b>
+        <div class="row"><span>Original size</span><span class="mono" id="origDims">—</span></div>
+        <div class="row"><span>File size</span><span class="mono" id="origSize">—</span></div>
+        <div class="row"><span>Enhanced size</span><span class="mono" id="newDims">Abhi enhance nahi hua</span></div>
+      </div>
+
+      <h3>2 — Output size</h3>
+      <div class="seg" id="scaleSeg">
+        <button data-scale="2">2× Upscale</button>
+        <button data-scale="3">3× Upscale</button>
+        <button data-scale="4k" class="active">4K — 3840px ★</button>
+        <button data-scale="15">1.5× Halka</button>
+      </div>
+      <p class="sub" style="margin-top:8px">4K mein longest side 3840px ho jayegi. Agar photo pehle hi bari hai to size waisa hi rahega, sirf quality enhance hogi.</p>
+
+      <h3>Presets</h3>
+      <div class="presets" id="presets">
+        <button class="preset active" data-preset="balanced">Balanced</button>
+        <button class="preset" data-preset="sharp">Sharp Pro</button>
+        <button class="preset" data-preset="vivid">Vivid</button>
+        <button class="preset" data-preset="soft">Soft</button>
+      </div>
+
+      <h3>Adjustments</h3>
+      <label>Sharpness <output id="oSharp">55</output></label>
+      <input type="range" id="sharp" min="0" max="100" value="55">
+      <label>Brightness <output id="oBright">8</output></label>
+      <input type="range" id="bright" min="-40" max="40" value="8">
+      <label>Contrast <output id="oCont">12</output></label>
+      <input type="range" id="cont" min="-40" max="60" value="12">
+      <label>Colour / Saturation <output id="oSat">10</output></label>
+      <input type="range" id="sat" min="-40" max="60" value="10">
+      <label>Smoothness (noise kam) <output id="oSmooth">20</output></label>
+      <input type="range" id="smooth" min="0" max="100" value="20">
+
+      <h3>Download format</h3>
+      <select id="format">
+        <option value="png">PNG — sab se best quality, bari file</option>
+        <option value="jpeg" selected>JPG — achi quality, choti file</option>
+        <option value="webp">WebP — modern, sab se choti file</option>
+      </select>
+
+      <button class="btn btn-primary" id="enhanceBtn" disabled>✦ &nbsp;Enhance to 4K</button>
+      <button class="btn btn-download" id="downloadBtn">⬇ &nbsp;Enhanced Photo Download Karein</button>
+      <button class="btn btn-ghost" id="resetBtn">Reset — nayi photo</button>
+
+      <div class="progress" id="progressBox">
+        <div class="bar"><i id="barFill"></i></div>
+        <p id="progressText">Processing…</p>
+      </div>
+
+      <div class="note"><b>Sach baat:</b> Ye browser-based enhancer hai — stepwise upscaling + sharpening se photo bari aur saaf hoti hai. Ye paid AI services jaisi khoyi hui detail dobara nahi bana sakta, lekin prints, reels covers aur social posts ke liye result kaafi behtar ho jata hai.</div>
+    </section>
+
+    <!-- Preview -->
+    <section class="card" aria-label="Preview">
+      <div class="preview-head">
+        <div><h2>Before / After</h2><p class="sub" style="margin:2px 0 0">Slider ghuma kar farq dekhein</p></div>
+        <div class="stats">
+          <span class="stat">Before <b id="statBefore">—</b></span>
+          <span class="stat">After <b id="statAfter">—</b></span>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="empty" id="emptyState">
+          <div class="big">🖼️</div>
+          <strong>Abhi koi photo nahi hai</strong>
+          <p style="margin:6px 0 0;max-width:380px">Left side se photo upload karein. Upload hote hi yahan preview aa jayega, aur Enhance dabane ke baad Before / After slider se farq saaf dikhega.</p>
+        </div>
+
+        <div class="compare" id="compareBox">
+          <span class="tag before">Before</span><span class="tag after">After</span>
+          <img id="imgBefore" alt="Original photo before enhancement">
+          <div class="afterWrap" id="afterWrap"><img id="imgAfter" alt="Enhanced 4K photo"></div>
+          <div class="handle" id="handle"></div>
+        </div>
+        <input type="range" class="range-compare" id="compareRange" min="0" max="100" value="55" aria-label="Before after comparison slider" style="display:none">
+        <p class="sub" id="previewHint" style="margin-top:10px;display:none">Tip: Bari photo par zoom karke dekhein — text aur edges mein sharpness ka farq sab se zyada wahan nazar aata hai.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="tips">
+    <div class="card tip"><b>Behtar result ke liye</b><p>Sab se achi original photo use karein — WhatsApp par forward hui hui compressed photo mein detail pehle hi kam hoti hai.</p></div>
+    <div class="card tip"><b>Print karna hai?</b><p>4K + PNG choose karein. Print ke liye PNG sab se saaf rehta hai, file bari hogi lekin quality best hogi.</p></div>
+    <div class="card tip"><b>Reel / post ke liye?</b><p>4K + JPG aur Vivid preset try karein — colors zyada fresh lagen ge aur file bhi halki rahegi.</p></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var fileInput=document.getElementById('fileInput'), drop=document.getElementById('dropZone');
+  var enhanceBtn=document.getElementById('enhanceBtn'), downloadBtn=document.getElementById('downloadBtn');
+  var imgBefore=document.getElementById('imgBefore'), imgAfter=document.getElementById('imgAfter');
+  var compareBox=document.getElementById('compareBox'), afterWrap=document.getElementById('afterWrap'), handle=document.getElementById('handle'), range=document.getElementById('compareRange');
+  var empty=document.getElementById('emptyState'), fileMeta=document.getElementById('fileMeta');
+  var progressBox=document.getElementById('progressBox'), barFill=document.getElementById('barFill'), progressText=document.getElementById('progressText');
+  var originalImg=null, originalFile=null, resultCanvas=null, resultBlobUrl=null, scaleMode='4k';
+
+  function fmtBytes(b){ if(!b) return '—'; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(2)+' MB'; }
+  function setCompare(v){ afterWrap.style.clipPath='inset(0 0 0 '+v+'%)'; handle.style.left='calc('+v+'% - 1px)'; range.value=v; }
+  range.addEventListener('input',function(){ setCompare(+this.value); });
+  // drag on image
+  var dragging=false;
+  function fromEvent(e){ var r=compareBox.getBoundingClientRect(); var x=(e.touches?e.touches[0].clientX:e.clientX); var v=Math.max(2,Math.min(98,(x-r.left)/r.width*100)); setCompare(v); }
+  compareBox.addEventListener('pointerdown',function(e){ dragging=true; fromEvent(e); });
+  window.addEventListener('pointermove',function(e){ if(dragging) fromEvent(e); });
+  window.addEventListener('pointerup',function(){ dragging=false; });
+
+  drop.addEventListener('click',function(){ fileInput.click(); });
+  drop.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); }});
+  ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add('drag'); });});
+  ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove('drag'); });});
+  drop.addEventListener('drop',function(e){ var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) loadFile(f); });
+  fileInput.addEventListener('change',function(){ if(this.files[0]) loadFile(this.files[0]); });
+
+  function loadFile(file){
+    if(!file.type || file.type.indexOf('image/')!==0){ progressText.textContent='Ye image file nahi hai. JPG / PNG select karein.'; progressBox.classList.add('show'); return; }
+    originalFile=file;
+    var url=URL.createObjectURL(file);
+    var im=new Image();
+    im.onload=function(){
+      originalImg=im;
+      imgBefore.src=url; imgAfter.src=url;
+      empty.style.display='none'; compareBox.classList.add('show'); range.style.display='block'; document.getElementById('previewHint').style.display='block';
+      fileMeta.classList.add('show');
+      document.getElementById('fileName').textContent=file.name;
+      document.getElementById('origDims').textContent=im.naturalWidth+' × '+im.naturalHeight+' px';
+      document.getElementById('origSize').textContent=fmtBytes(file.size);
+      document.getElementById('newDims').textContent='Abhi enhance nahi hua';
+      document.getElementById('statBefore').textContent=im.naturalWidth+'×'+im.naturalHeight;
+      document.getElementById('statAfter').textContent='—';
+      enhanceBtn.disabled=false; downloadBtn.classList.remove('show'); resultCanvas=null;
+      setCompare(55);
+    };
+    im.src=url;
+  }
+
+  // scale selector
+  document.getElementById('scaleSeg').addEventListener('click',function(e){ if(e.target.tagName!=='BUTTON')return; this.querySelectorAll('button').forEach(function(b){b.classList.remove('active')}); e.target.classList.add('active'); scaleMode=e.target.getAttribute('data-scale'); enhanceBtn.textContent = scaleMode==='4k' ? '✦  Enhance to 4K' : '✦  Enhance Photo'; });
+
+  // sliders outputs
+  [['sharp','oSharp'],['bright','oBright'],['cont','oCont'],['sat','oSat'],['smooth','oSmooth']].forEach(function(p){
+    document.getElementById(p[0]).addEventListener('input',function(){ document.getElementById(p[1]).textContent=this.value; clearPreset(); });
+  });
+  function clearPreset(){ document.querySelectorAll('.preset').forEach(function(b){b.classList.remove('active')}); }
+  function setVals(o){ for(var k in o){ document.getElementById(k).value=o[k]; } syncOutputs(); }
+  function syncOutputs(){ [['sharp','oSharp'],['bright','oBright'],['cont','oCont'],['sat','oSat'],['smooth','oSmooth']].forEach(function(p){ document.getElementById(p[1]).textContent=document.getElementById(p[0]).value; }); }
+  var PRESETS={ balanced:{sharp:55,bright:8,cont:12,sat:10,smooth:20}, sharp:{sharp:85,bright:5,cont:18,sat:6,smooth:10}, vivid:{sharp:60,bright:10,cont:16,sat:38,smooth:15}, soft:{sharp:25,bright:12,cont:4,sat:8,smooth:55} };
+  document.getElementById('presets').addEventListener('click',function(e){ if(e.target.tagName!=='BUTTON')return; this.querySelectorAll('button').forEach(function(b){b.classList.remove('active')}); e.target.classList.add('active'); setVals(PRESETS[e.target.getAttribute('data-preset')]); });
+
+  function targetSize(w,h){
+    if(scaleMode==='4k'){ var longest=Math.max(w,h); if(longest>=3840) return [w,h]; var s=3840/longest; return [Math.round(w*s), Math.round(h*s)]; }
+    var f=parseFloat(scaleMode)||2; return [Math.round(w*f), Math.round(h*f)];
+  }
+
+  // Stepwise upscale for smoother result than one big jump
+  function upscale(img, tw, th, smoothAmt){
+    var cw=img.naturalWidth, ch=img.naturalHeight;
+    var cur=document.createElement('canvas'); cur.width=cw; cur.height=ch;
+    var cctx=cur.getContext('2d'); cctx.drawImage(img,0,0);
+    // optional light smoothing pass to reduce noise before upscale
+    if(smoothAmt>0 && (tw>cw)){
+      // drawn via CSS-like blur using filter on an intermediate copy (supported in modern browsers)
+      try{ var tmp=document.createElement('canvas'); tmp.width=cw; tmp.height=ch; var tctx=tmp.getContext('2d'); tctx.filter='blur('+(smoothAmt/100*0.7).toFixed(2)+'px)'; tctx.drawImage(cur,0,0); cur=tmp; cw=tmp.width; ch=tmp.height; }catch(e){}
+    }
+    while(cw < tw){
+      var nw=Math.min(tw, Math.round(cw*1.5)+1), nh=Math.round(nw * (img.naturalHeight/img.naturalWidth));
+      if(nh>th) { nh=Math.min(th, Math.round(ch*1.5)+1); nw=Math.round(nh*(img.naturalWidth/img.naturalHeight)); }
+      var nxt=document.createElement('canvas'); nxt.width=nw; nxt.height=nh;
+      var nctx=nxt.getContext('2d'); nctx.imageSmoothingEnabled=true; nctx.imageSmoothingQuality='high'; nctx.drawImage(cur,0,0,nw,nh);
+      cur=nxt; cw=nw; ch=nh; if(cw>=tw && ch>=th) break;
+    }
+    // exact final size
+    if(cur.width!==tw || cur.height!==th){ var fin=document.createElement('canvas'); fin.width=tw; fin.height=th; var fx=fin.getContext('2d'); fx.imageSmoothingEnabled=true; fx.imageSmoothingQuality='high'; fx.drawImage(cur,0,0,tw,th); cur=fin; }
+    return cur;
+  }
+
+  function applyFiltersAndSharpen(srcCanvas){
+    var bright=+document.getElementById('bright').value, cont=+document.getElementById('cont').value, sat=+document.getElementById('sat').value;
+    var out=document.createElement('canvas'); out.width=srcCanvas.width; out.height=srcCanvas.height;
+    var ctx=out.getContext('2d');
+    try{ ctx.filter='brightness('+(1+bright/100)+') contrast('+(1+cont/100)+') saturate('+(1+sat/100)+')'; }catch(e){}
+    ctx.drawImage(srcCanvas,0,0);
+    // Sharpen via convolution (unsharp-style kernel)
+    var amount=(+document.getElementById('sharp').value)/100; // 0..1
+    if(amount>0.01){
+      var w=out.width,h=out.height;
+      var imgData=ctx.getImageData(0,0,w,h), src=imgData.data, copy=new Uint8ClampedArray(src);
+      var s=amount*0.9, center=1+4*s;
+      for(var y=1;y<h-1;y++){ for(var x=1;x<w-1;x++){ var i=(y*w+x)*4; for(var c=0;c<3;c++){ var idx=i+c; var val=center*copy[idx] - s*(copy[idx-4]+copy[idx+4]+copy[idx-w*4]+copy[idx+w*4]); src[idx]=val; } } }
+      ctx.putImageData(imgData,0,0);
+    }
+    return out;
+  }
+
+  function setProgress(pct,msg){ progressBox.classList.add('show'); barFill.style.width=pct+'%'; progressText.textContent=msg; }
+
+  enhanceBtn.addEventListener('click',function(){
+    if(!originalImg) return;
+    enhanceBtn.disabled=true; downloadBtn.classList.remove('show');
+    setProgress(15,'Photo parhi ja rahi hai…');
+    setTimeout(function(){
+      try{
+        var ts=targetSize(originalImg.naturalWidth, originalImg.naturalHeight);
+        setProgress(40,'Upscale ho raha hai — '+ts[0]+' × '+ts[1]+' px…');
+        setTimeout(function(){
+          var up=upscale(originalImg, ts[0], ts[1], +document.getElementById('smooth').value);
+          setProgress(75,'Sharpness aur colours apply ho rahe hain…');
+          setTimeout(function(){
+            resultCanvas=applyFiltersAndSharpen(up);
+            resultCanvas.toBlob(function(blob){
+              if(resultBlobUrl) URL.revokeObjectURL(resultBlobUrl);
+              resultBlobUrl=URL.createObjectURL(blob);
+              imgAfter.src=resultBlobUrl;
+              document.getElementById('newDims').textContent=resultCanvas.width+' × '+resultCanvas.height+' px • '+fmtBytes(blob.size);
+              document.getElementById('statAfter').textContent=resultCanvas.width+'×'+resultCanvas.height;
+              setProgress(100,'Ho gaya! After wali side enhanced photo hai. Neeche se download kar lein.');
+              downloadBtn.classList.add('show'); enhanceBtn.disabled=false; setCompare(55);
+            }, 'image/png');
+          },30);
+        },30);
+      }catch(err){ setProgress(100,'Masla aa gaya: '+err.message); enhanceBtn.disabled=false; }
+    },30);
+  });
+
+  downloadBtn.addEventListener('click',function(){
+    if(!resultCanvas) return;
+    var fmt=document.getElementById('format').value;
+    var mime= fmt==='png'?'image/png':(fmt==='webp'?'image/webp':'image/jpeg');
+    var ext= fmt==='png'?'png':(fmt==='webp'?'webp':'jpg');
+    resultCanvas.toBlob(function(blob){
+      var a=document.createElement('a'); var base=(originalFile?originalFile.name.replace(/\.[^.]+$/,''):'photo');
+      a.href=URL.createObjectURL(blob); a.download=base+'-enhanced-4k.'+ext; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
+    }, mime, 0.92);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click',function(){ location.reload(); });
+  setCompare(55);
+})();
+</script>
+</body>
+</html>
